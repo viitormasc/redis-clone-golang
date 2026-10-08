@@ -14,6 +14,9 @@ func handleCommand(args handler.Arguments) string {
 	switch cmd {
 	case "PING":
 		return args.HandlePing()
+
+	case "ECHO":
+		return args.HandlePing()
 	}
 
 	return fmt.Sprintf("-ERR unknown command '%s'\r\n", cmd)

@@ -14,3 +14,10 @@ func (args Arguments) HandlePing() string {
 		return resp.BulkString(args[1:])
 	}
 }
+
+func (args Arguments) HandleEcho() string {
+	if len(args) != 2 {
+		return resp.Err("wrong number of arguments for ECHO command")
+	}
+	return resp.BulkString(args[1:])
+}
