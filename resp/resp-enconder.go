@@ -1,6 +1,7 @@
 package resp
 
 import (
+	"fmt"
 	"strconv"
 )
 
@@ -20,4 +21,9 @@ func BulkString(str []string) string {
 		bulkResp = marker + lenString + crlf + s + crlf
 	}
 	return bulkResp
+}
+
+func Err(message string) string {
+	errResp := fmt.Sprintf("-ERR %s\r\n", message)
+	return errResp
 }

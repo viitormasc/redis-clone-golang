@@ -5,6 +5,9 @@ import "redis-clone/resp"
 type Arguments []string
 
 func (args Arguments) HandlePing() string {
+	if len(args) > 2 {
+		return resp.Err("wrong number of arguments for PING command")
+	}
 	if len(args) == 1 {
 		return resp.SimpleString("PONG")
 	} else {
