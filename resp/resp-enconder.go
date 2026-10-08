@@ -27,3 +27,12 @@ func Err(message string) string {
 	errResp := fmt.Sprintf("-ERR %s\r\n", message)
 	return errResp
 }
+
+func NullBulk(s string) string {
+	return "$-1\r\n"
+}
+
+func Int(int int64) string {
+	errResp := fmt.Sprintf(":%v\r\n", int)
+	return errResp
+}
