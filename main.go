@@ -4,16 +4,16 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"redis-clone/handler"
 	"strings"
 )
 
-func handleCommand(args []string) string {
+func handleCommand(args handler.Arguments) string {
 	cmd := strings.ToUpper(args[0])
 
 	switch cmd {
 	case "PING":
-		// TODO: Return "+PONG\r\n" for no args
-		// TODO: Return bulk string for PING <message>
+		return args.HandlePing()
 	}
 
 	return fmt.Sprintf("-ERR unknown command '%s'\r\n", cmd)
