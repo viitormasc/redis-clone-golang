@@ -9,7 +9,7 @@ const crlf string = "\r\n"
 const marker string = "$"
 
 func SimpleString(s string) string {
-	simpleResp := "+" + s + crlf
+	simpleResp := fmt.Sprintf("+%v%v", s, crlf)
 	return simpleResp
 }
 
@@ -28,7 +28,7 @@ func Err(message string) string {
 	return errResp
 }
 
-func NullBulk(s string) string {
+func NullBulk() string {
 	return "$-1\r\n"
 }
 
