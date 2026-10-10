@@ -81,5 +81,6 @@ func (args Arguments) HandleSet() string {
 func (args Arguments) HandleGet() string {
 	key := args[1]
 	value := db.Database.GetValue(key)
-	return resp.BulkString(value)
+	arrStr := []string{value}
+	return resp.BulkString(arrStr)
 }
