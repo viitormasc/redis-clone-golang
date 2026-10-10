@@ -15,21 +15,11 @@ func handleCommand(args handler.Arguments) string {
 	if err != nil {
 		return err.Error()
 	}
-	switch cmd {
-	case "PING":
-		return args.HandlePing()
-
-	case "ECHO":
-		return args.HandleEcho()
-
-	case "COMMAND":
-		return args.HandleCommand()
-	case "SET":
-		return args.HandleSet()
-	case "GET":
-		return args.HandleGet()
+	for cmdName, handler := range handler.CommandDef {
+		if cmdName == cmd {
+			return handler.Handler(args)
+		}
 	}
-
 	return fmt.Sprintf("-ERR unknown command '%s'\r\n", cmd)
 }
 

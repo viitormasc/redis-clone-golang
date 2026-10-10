@@ -36,7 +36,7 @@ func NullBulk() string {
 	return "$-1\r\n"
 }
 
-func Int(int int64) string {
+func Int(int int) string {
 	errResp := fmt.Sprintf(":%v\r\n", int)
 	return errResp
 }

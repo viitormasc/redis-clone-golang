@@ -7,31 +7,43 @@ import (
 	"strings"
 )
 
+type Arguments []string
 type argsArity struct {
-	min int
-	max int
+	min     int
+	max     int
+	Handler func(args Arguments) string
 }
 
-var argsCount = map[string]argsArity{
+var CommandDef = map[string]argsArity{
 	"PING": {
-		min: 1,
-		max: 2,
+		min:     1,
+		max:     2,
+		Handler: HandlePing,
 	},
 	"ECHO": {
-		min: 2,
-		max: 2,
+		min:     2,
+		max:     2,
+		Handler: HandleEcho,
 	},
 	"COMMAND": {
-		min: 0,
-		max: 2,
+		min:     0,
+		max:     2,
+		Handler: HandleCommand,
 	},
 	"SET": {
-		min: 3,
-		max: 3,
+		min:     3,
+		max:     3,
+		Handler: HandleSet,
 	},
 	"GET": {
-		min: 2,
-		max: 2,
+		min:     2,
+		max:     2,
+		Handler: HandleGet,
+	},
+	"DBSIZE": {
+		min:     1,
+		max:     1,
+		Handler: HandleDbSize,
 	},
 }
 
@@ -42,7 +54,7 @@ func emitCommandNotFound(cmd string) error {
 	return err
 }
 func CheckNumberOfArgs(args Arguments, cmd string) error {
-	numberOfArgs, ok := argsCount[cmd]
+	numberOfArgs, ok := CommandDef[cmd]
 	if !ok {
 		return emitCommandNotFound(cmd)
 	}
@@ -55,9 +67,7 @@ func CheckNumberOfArgs(args Arguments, cmd string) error {
 	return nil
 }
 
-type Arguments []string
-
-func (args Arguments) HandlePing() string {
+func HandlePing(args Arguments) string {
 	if len(args) == 1 {
 		return resp.SimpleString("PONG")
 	} else {
@@ -65,19 +75,23 @@ func (args Arguments) HandlePing() string {
 	}
 }
 
-func (args Arguments) HandleEcho() string {
+func HandleEcho(args Arguments) string {
 	return resp.BulkString(args[1:])
 }
-func (args Arguments) HandleCommand() string {
+func HandleCommand(args Arguments) string {
 	return resp.SimpleString("OK")
 }
 
-func (args Arguments) HandleSet() string {
+func HandleSet(args Arguments) string {
 	key, value := args[1], args[2]
 	return db.SetValue(key, value)
 }
 
-func (args Arguments) HandleGet() string {
+func HandleGet(args Arguments) string {
 	key := args[1]
 	return db.GetValue(key)
+}
+
+func HandleDbSize(args Arguments) string {
+	return db.Size()
 }

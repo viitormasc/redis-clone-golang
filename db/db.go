@@ -19,3 +19,7 @@ func GetValue(k string) string {
 	}
 	return resp.BulkString(nil)
 }
+
+func Size() string {
+	return resp.Int(len(KeyValuePair))
+}
