@@ -14,6 +14,9 @@ func SimpleString(s string) string {
 }
 
 func BulkString(arrStr []string) string {
+	if len(arrStr) == 0 {
+		return NullBulk()
+	}
 	bulkResp := ""
 	for _, s := range arrStr {
 		sLen := len(s)

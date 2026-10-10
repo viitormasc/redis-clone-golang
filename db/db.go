@@ -24,9 +24,8 @@ func (db *DB) GetValue(k string) string {
 		if kv.key == k {
 			arrStr := []string{kv.value}
 			return resp.BulkString(arrStr)
-		} else {
-			return resp.NullBulk()
 		}
 	}
-	return resp.NullBulk()
+	return resp.BulkString(nil)
+
 }
