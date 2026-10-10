@@ -74,13 +74,10 @@ func (args Arguments) HandleCommand() string {
 
 func (args Arguments) HandleSet() string {
 	key, value := args[1], args[2]
-	db.Database.SetValue(key, value)
-	return resp.SimpleString("OK")
+	return db.Database.SetValue(key, value)
 }
 
 func (args Arguments) HandleGet() string {
 	key := args[1]
-	value := db.Database.GetValue(key)
-	arrStr := []string{value}
-	return resp.BulkString(arrStr)
+	return db.Database.GetValue(key)
 }
