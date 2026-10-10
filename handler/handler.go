@@ -81,10 +81,5 @@ func (args Arguments) HandleSet() string {
 func (args Arguments) HandleGet() string {
 	key := args[1]
 	value := db.Database.GetValue(key)
-
-	s, ok := value.(string)
-	if ok {
-		return resp.SimpleString(s)
-	}
-	return resp.NullBulk()
+	return resp.BulkString(value)
 }

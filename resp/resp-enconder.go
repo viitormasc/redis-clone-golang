@@ -13,9 +13,9 @@ func SimpleString(s string) string {
 	return simpleResp
 }
 
-func BulkString(str []string) string {
+func BulkString(arrStr []string) string {
 	bulkResp := ""
-	for _, s := range str {
+	for _, s := range arrStr {
 		sLen := len(s)
 		lenString := strconv.Itoa(sLen)
 		bulkResp = marker + lenString + crlf + s + crlf

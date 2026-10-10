@@ -2,7 +2,7 @@ package db
 
 type Pair struct {
 	key   string
-	value any
+	value []string
 }
 
 type DB []Pair
@@ -10,15 +10,16 @@ type DB []Pair
 var Database = DB{}
 
 func (db *DB) SetValue(k string, v string) {
-
-	kv := Pair{key: k, value: v}
+	vArr := db.GetValue(k)
+	vArr = append(vArr, v)
+	kv := Pair{key: k, value: vArr}
 	Database = append(Database, kv)
 }
 
-func (db *DB) GetValue(k string) any {
+func (db *DB) GetValue(k string) []string {
 	for _, kv := range Database {
 		if kv.key == k {
-			return kv.key
+			return kv.value
 		}
 	}
 	return nil
