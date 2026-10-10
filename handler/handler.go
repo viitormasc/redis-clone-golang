@@ -74,10 +74,10 @@ func (args Arguments) HandleCommand() string {
 
 func (args Arguments) HandleSet() string {
 	key, value := args[1], args[2]
-	return db.Database.SetValue(key, value)
+	return db.SetValue(key, value)
 }
 
 func (args Arguments) HandleGet() string {
 	key := args[1]
-	return db.Database.GetValue(key)
+	return db.GetValue(key)
 }

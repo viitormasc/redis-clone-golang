@@ -50,6 +50,9 @@ func parseArgs(line string) []string {
 		case ch == '"' && !inQuotes:
 			inQuotes = true
 		case ch == '"' && inQuotes:
+			if current.String() == "" {
+				args = append(args, "")
+			}
 			inQuotes = false
 		case ch == ' ' && !inQuotes:
 			if current.Len() > 0 {

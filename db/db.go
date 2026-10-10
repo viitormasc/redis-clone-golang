@@ -2,30 +2,20 @@ package db
 
 import "redis-clone/resp"
 
-type Pair struct {
-	key   string
-	value string
-}
+type KvPair map[string]string
 
-type DB []Pair
+var KeyValuePair = KvPair{}
 
-var Database = DB{}
-
-func (db *DB) SetValue(k string, v string) string {
-	// vArr := db.GetValue(k)
-	// vArr = append(vArr, v)
-	kv := Pair{key: k, value: v}
-	Database = append(Database, kv)
+func SetValue(k string, v string) string {
+	KeyValuePair[k] = v
 	return resp.SimpleString("OK")
 }
 
-func (db *DB) GetValue(k string) string {
-	for _, kv := range Database {
-		if kv.key == k {
-			arrStr := []string{kv.value}
-			return resp.BulkString(arrStr)
-		}
+func GetValue(k string) string {
+	value, ok := KeyValuePair[k]
+	if ok {
+		arrStr := []string{value}
+		return resp.BulkString(arrStr)
 	}
 	return resp.BulkString(nil)
-
 }
