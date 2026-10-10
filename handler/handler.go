@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"redis-clone/db"
 	"redis-clone/resp"
+	"slices"
 	"strings"
 )
 
@@ -32,7 +33,7 @@ var CommandDef = map[string]argsArity{
 	},
 	"SET": {
 		min:     3,
-		max:     3,
+		max:     4,
 		Handler: HandleSet,
 	},
 	"GET": {
@@ -83,7 +84,25 @@ func HandleCommand(args Arguments) string {
 }
 
 func HandleSet(args Arguments) string {
+	definedFlags := []string{"NX", "XX"}
 	key, value := args[1], args[2]
+	keyExists := db.GetValue(key) != resp.NullBulk()
+	if len(args) >= 3 {
+		flags := args[3:]
+		for _, flag := range flags {
+			upperFlag := strings.ToUpper(flag)
+			if !slices.Contains(definedFlags, upperFlag) {
+				errMessage := fmt.Sprintf("syntax error, flag %v is not valid", upperFlag)
+				return resp.Err(errMessage)
+			}
+			if upperFlag == "NX" && keyExists {
+				return resp.NullBulk()
+			}
+			if upperFlag == "XX" && !keyExists {
+				return resp.NullBulk()
+			}
+		}
+	}
 	return db.SetValue(key, value)
 }
 
