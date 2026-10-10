@@ -3,6 +3,7 @@ package resp
 import (
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 const crlf string = "\r\n"
@@ -38,4 +39,39 @@ func NullBulk() string {
 func Int(int int64) string {
 	errResp := fmt.Sprintf(":%v\r\n", int)
 	return errResp
+}
+
+func parseArgs(line string) []string {
+	var args []string
+	var current strings.Builder
+	inQuotes := false
+	for _, ch := range line {
+		switch {
+		case ch == '"' && !inQuotes:
+			inQuotes = true
+		case ch == '"' && inQuotes:
+			inQuotes = false
+		case ch == ' ' && !inQuotes:
+			if current.Len() > 0 {
+				args = append(args, current.String())
+				current.Reset()
+			}
+		default:
+			current.WriteRune(ch)
+		}
+	}
+	if current.Len() > 0 {
+		args = append(args, current.String())
+	}
+	return args
+}
+func ParseClientCommand(line string) string {
+	args := parseArgs(line)
+	argsNum := len(args)
+	encodeResp := fmt.Sprintf("*%v\r\n", argsNum)
+	for _, arg := range args {
+		argLen := len(arg)
+		encodeResp += fmt.Sprintf("$%v\r\n%v\r\n", argLen, arg)
+	}
+	return encodeResp
 }

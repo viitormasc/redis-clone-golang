@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"fmt"
-	// "io"
 	"os"
 	"redis-clone/handler"
 	"redis-clone/resp"
@@ -55,51 +54,18 @@ func readStdin() string {
 }
 
 func main() {
-	// stream := readStdin()
 	scanner := bufio.NewScanner(os.Stdin)
-	var stream string
-	run := 1
 	for scanner.Scan() {
 		line := scanner.Text()
-		if line == "" {
+		stream := resp.ParseClientCommand(line)
+		if stream == "" {
 			continue
 		}
-		if strings.HasPrefix(line, "*") && run != 1 {
+		if strings.HasPrefix(stream, "*") {
 			args := resp.DecodeBulkString(stream)
 			response := handleCommand(args)
 			fmt.Print(response)
-			stream = line + "\r\n"
 			continue
 		}
-		stream += line + "\r\n"
-		run++
 	}
-	args := resp.DecodeBulkString(stream)
-	response := handleCommand(args)
-	fmt.Print(response)
-}
-
-func parseArgs(line string) []string {
-	var args []string
-	var current strings.Builder
-	inQuotes := false
-	for _, ch := range line {
-		switch {
-		case ch == '"' && !inQuotes:
-			inQuotes = true
-		case ch == '"' && inQuotes:
-			inQuotes = false
-		case ch == ' ' && !inQuotes:
-			if current.Len() > 0 {
-				args = append(args, current.String())
-				current.Reset()
-			}
-		default:
-			current.WriteRune(ch)
-		}
-	}
-	if current.Len() > 0 {
-		args = append(args, current.String())
-	}
-	return args
 }
