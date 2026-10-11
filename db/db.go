@@ -2,6 +2,7 @@ package db
 
 import (
 	"redis-clone/resp"
+	"strconv"
 )
 
 type KvPair map[string]string
@@ -24,4 +25,23 @@ func GetValue(k string) string {
 
 func Size() string {
 	return resp.Int(len(KeyValuePair))
+}
+
+func ChangeInt(k string, incr bool, difValue string) string {
+	value, ok := KeyValuePair[k]
+	if !ok {
+		value = "0"
+	}
+	valueInt, err := strconv.Atoi(value)
+	diffValueInt, errInc := strconv.Atoi(difValue)
+	if err != nil || errInc != nil {
+		return resp.Err("value is not an integer or out of range")
+	}
+	if incr {
+		valueInt += diffValueInt
+	} else {
+		valueInt -= diffValueInt
+	}
+	KeyValuePair[k] = strconv.Itoa(valueInt)
+	return resp.Int(valueInt)
 }

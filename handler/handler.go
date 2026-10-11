@@ -21,6 +21,26 @@ var CommandDef = map[string]argsArity{
 		max:     2,
 		Handler: HandlePing,
 	},
+	"INCR": {
+		min:     2,
+		max:     2,
+		Handler: HandleIncr,
+	},
+	"INCRBY": {
+		min:     3,
+		max:     3,
+		Handler: HandleIncrby,
+	},
+	"DECR": {
+		min:     2,
+		max:     2,
+		Handler: HandleDecr,
+	},
+	"DECRBY": {
+		min:     3,
+		max:     3,
+		Handler: HandleDecrby,
+	},
 	"ECHO": {
 		min:     2,
 		max:     2,
@@ -113,4 +133,24 @@ func HandleGet(args Arguments) string {
 
 func HandleDbSize(args Arguments) string {
 	return db.Size()
+}
+
+func HandleIncr(args Arguments) string {
+	key := args[1]
+	return db.ChangeInt(key, true, "1")
+}
+
+func HandleIncrby(args Arguments) string {
+	key, incrValue := args[1], args[2]
+	return db.ChangeInt(key, true, incrValue)
+}
+
+func HandleDecr(args Arguments) string {
+	key := args[1]
+	return db.ChangeInt(key, false, "1")
+}
+
+func HandleDecrby(args Arguments) string {
+	key, incrValue := args[1], args[2]
+	return db.ChangeInt(key, false, incrValue)
 }
