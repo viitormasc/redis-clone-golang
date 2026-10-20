@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"redis-clone/db"
 	"redis-clone/resp"
+	"slices"
+
 	// "slices"
 	"strconv"
 	"strings"
@@ -131,7 +133,13 @@ func HandleSet(args Arguments) string {
 	if len(args) >= 3 {
 		flags := args[3:]
 		for i, flag := range flags {
-			upperFlag := strings.ToUpper(flag)
+			flags[i] = strings.ToUpper(flag)
+		}
+		if slices.Contains(flags, "EX") && slices.Contains(flags, "PX") {
+			return resp.Err("EX and PX arguments can't be used together")
+		}
+		for i, flag := range flags {
+			upperFlag := flag
 			if upperFlag == "NX" && keyExists {
 				return resp.NullBulk()
 			}
