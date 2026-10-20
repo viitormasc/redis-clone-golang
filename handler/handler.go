@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"redis-clone/db"
 	"redis-clone/resp"
-	"slices"
+	// "slices"
+	"strconv"
 	"strings"
 )
 
@@ -20,6 +21,26 @@ var CommandDef = map[string]argsArity{
 		min:     1,
 		max:     2,
 		Handler: HandlePing,
+	},
+	"EXPIRE": {
+		min:     3,
+		max:     3,
+		Handler: HandleExpire,
+	},
+	"TTL": {
+		min:     2,
+		max:     2,
+		Handler: HandleTtl,
+	},
+	"PTTL": {
+		min:     2,
+		max:     2,
+		Handler: HandlePttl,
+	},
+	"PERSIST": {
+		min:     2,
+		max:     2,
+		Handler: HandlePersist,
 	},
 	"INCR": {
 		min:     2,
@@ -53,7 +74,7 @@ var CommandDef = map[string]argsArity{
 	},
 	"SET": {
 		min:     3,
-		max:     4,
+		max:     6,
 		Handler: HandleSet,
 	},
 	"GET": {
@@ -104,26 +125,40 @@ func HandleCommand(args Arguments) string {
 }
 
 func HandleSet(args Arguments) string {
-	definedFlags := []string{"NX", "XX"}
 	key, value := args[1], args[2]
 	keyExists := db.GetValue(key) != resp.NullBulk()
+	var ttlSec int
 	if len(args) >= 3 {
 		flags := args[3:]
-		for _, flag := range flags {
+		for i, flag := range flags {
 			upperFlag := strings.ToUpper(flag)
-			if !slices.Contains(definedFlags, upperFlag) {
-				errMessage := fmt.Sprintf("syntax error, flag %v is not valid", upperFlag)
-				return resp.Err(errMessage)
-			}
 			if upperFlag == "NX" && keyExists {
 				return resp.NullBulk()
 			}
 			if upperFlag == "XX" && !keyExists {
 				return resp.NullBulk()
 			}
+			if upperFlag == "EX" {
+				time, err := strconv.Atoi(flags[i+1])
+				if err != nil {
+					return resp.Err("Time should be a number")
+				}
+				ttlSec = time
+			}
+			if upperFlag == "PX" {
+				time, err := strconv.Atoi(flags[i+1])
+				if err != nil {
+					return resp.Err("Time should be a number")
+				}
+				ttlSec = time / 1000
+			}
 		}
 	}
-	return db.SetValue(key, value)
+	response := db.SetValue(key, value)
+	if ttlSec != 0 {
+		db.ChangeExpireTime(key, strconv.Itoa(ttlSec))
+	}
+	return response
 }
 
 func HandleGet(args Arguments) string {
@@ -148,6 +183,23 @@ func HandleIncrby(args Arguments) string {
 func HandleDecr(args Arguments) string {
 	key := args[1]
 	return db.ChangeInt(key, false, "1")
+}
+
+func HandleExpire(args Arguments) string {
+	key, ttlSec := args[1], args[2]
+	return db.ChangeExpireTime(key, ttlSec)
+}
+func HandleTtl(args Arguments) string {
+	key := args[1]
+	return db.GetExpireTime(key, db.Seconds)
+}
+func HandlePttl(args Arguments) string {
+	key := args[1]
+	return db.GetExpireTime(key, db.Milliseconds)
+}
+func HandlePersist(args Arguments) string {
+	key := args[1]
+	return db.DeleteExpireKey(key)
 }
 
 func HandleDecrby(args Arguments) string {
