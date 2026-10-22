@@ -20,11 +20,11 @@ const (
 
 func SetValue(k string, v string) string {
 	keyValuePair[k] = v
-	// expires[k] = strconv.Itoa(int(math.Inf(1)))
 	return resp.SimpleString("OK")
 }
 
 func GetValue(k string) string {
+	deleteIfExpired(k)
 	value, ok := keyValuePair[k]
 	if ok {
 		arrStr := []string{value}
@@ -34,10 +34,17 @@ func GetValue(k string) string {
 }
 
 func Size() string {
-	return resp.Int(len(keyValuePair))
+	size := 0
+	for k, _ := range keyValuePair {
+		if !isExpired(k) {
+			size++
+		}
+	}
+	return resp.Int(size)
 }
 
 func ChangeInt(k string, incr bool, difValue string) string {
+	deleteIfExpired(k)
 	value, ok := keyValuePair[k]
 	if !ok {
 		value = "0"
@@ -94,6 +101,33 @@ func ChangeExpireTime(k string, ttlSecStr string) string {
 func now() int {
 	return int(time.Now().UTC().UnixMilli() / 1000)
 }
+func isExpired(k string) bool {
+	ttlStr, ok := expires[k]
+	if !ok {
+		return true
+	}
+	ttl, _ := strconv.Atoi(ttlStr)
+	now := now()
+
+	return ttl < now
+
+}
+func deleteIfExpired(k string) {
+	expired := isExpired(k)
+	if expired {
+		delete(keyValuePair, k)
+		delete(expires, k)
+	}
+}
+
+func Wait(waitTimeMs string) string {
+	waitTimeMsInt, err := strconv.Atoi(waitTimeMs)
+	if err != nil {
+		return resp.Err("time must be a integer")
+	}
+	time.Sleep(time.Duration(waitTimeMsInt) * time.Millisecond)
+	return resp.SimpleString("OK")
+}
 
 func GetExpireTime(k string, unit Unit) string {
 	if unit != Milliseconds && unit != Seconds {
@@ -121,4 +155,13 @@ func GetExpireTime(k string, unit Unit) string {
 	} else {
 		return resp.Int(-2)
 	}
+}
+
+func Exists(k string) string {
+	deleteIfExpired(k)
+	_, ok := keyValuePair[k]
+	if ok {
+		return resp.Int(1)
+	}
+	return resp.Int(0)
 }

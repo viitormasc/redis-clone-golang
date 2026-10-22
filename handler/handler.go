@@ -6,7 +6,6 @@ import (
 	"redis-clone/resp"
 	"slices"
 
-	// "slices"
 	"strconv"
 	"strings"
 )
@@ -28,6 +27,16 @@ var CommandDef = map[string]argsArity{
 		min:     3,
 		max:     3,
 		Handler: HandleExpire,
+	},
+	"WAIT": {
+		min:     2,
+		max:     2,
+		Handler: HandleWait,
+	},
+	"EXISTS": {
+		min:     2,
+		max:     2,
+		Handler: HandleExists,
 	},
 	"TTL": {
 		min:     2,
@@ -213,4 +222,14 @@ func HandlePersist(args Arguments) string {
 func HandleDecrby(args Arguments) string {
 	key, incrValue := args[1], args[2]
 	return db.ChangeInt(key, false, incrValue)
+}
+
+func HandleWait(args Arguments) string {
+	time := args[1]
+	return db.Wait(time)
+}
+
+func HandleExists(args Arguments) string {
+	key := args[1]
+	return db.Exists(key)
 }
